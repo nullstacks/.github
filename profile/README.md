@@ -1,12 +1,13 @@
-## Hi there 👋
+# Nullstacks
 
-<!--
+Open-source AI tools and utilities. Small, sharp, composable.
 
-**Here are some ideas to get you started:**
+## Projects
 
-🙋‍♀️ A short introduction - what is your organization all about?
-🌈 Contribution guidelines - how can the community get involved?
-👩‍💻 Useful resources - where can the community find your docs? Is there anything else the community should know?
-🍿 Fun facts - what does your team eat for breakfast?
-🧙 Remember, you can do mighty things with the power of [Markdown](https://docs.github.com/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax)
--->
+- **[temp-mail-extension](https://github.com/nullstacks/temp-mail-extension)** — disposable email browser extension for Chrome & Brave, powered by the free temp.tf API
+- **[mailapi](https://github.com/nullstacks/mailapi)** — your Gmail, as a REST API
+- **[cookie-manager](https://github.com/nullstacks/cookie-manager)** — cookie editor for Chrome & Brave
+
+## Contact
+
+Open an issue, or email [help.pushkar@gmail.com](mailto:help.pushkar@gmail.com).
