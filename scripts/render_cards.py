@@ -296,27 +296,40 @@ def repo_card(idx, slug, key, desc, lang, live):
 
 
 def write_readme():
+    """Emit the README.
+
+    CRITICAL: cards in a row must be joined with NO whitespace at all. A newline
+    or a single space between two 49.5%-width images adds a text space to the
+    line box, pushing 2 x 211.9 + space past the 428px column, so the second
+    card wraps onto its own line and every pair renders stacked. Joining the
+    tags directly is what keeps two-up two-up.
+    """
     raw = "https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards"
+
+    def img_card(href, name, width, alt, extra=""):
+        return (f'<a href="{href}"><img src="{raw}/{name}.svg" width="{width}" '
+                f'alt="{alt}"{extra} /></a>')
+
+    def row(cells, center=True):
+        return ('<p align="center">' if center else "<p>") + "".join(cells) + "</p>"
+
     L = [
-        f'<p align="center">\n  <a href="https://github.com/orgs/nullstacks/repositories">'
-        f'<img src="{raw}/hero.svg" width="100%" alt="Nullstacks: open-source AI tools and utilities. '
-        f'Small, sharp, composable." /></a>\n</p>\n',
-        '<p align="center">',
+        row([img_card("https://github.com/orgs/nullstacks/repositories", "hero",
+                      "100%", "Nullstacks: open-source AI tools and utilities. "
+                      "Small, sharp, composable.")]),
+        "",
     ]
-    for i, (k, c) in enumerate(CATS.items()):
-        L.append(f'  <a href="#projects"><img src="{raw}/tile-{k}.svg" width="49.5%" '
-                 f'alt="{esc(c["label"].title())}" /></a>')
-        # two tiles per row; a new <p> starts the next row
-        if i % 2 == 1 and i != len(CATS) - 1:
-            L.append("</p>\n\n<p align=\"center\">")
-    L.append("</p>\n\n## Projects\n")
-    L.append("<p>")
-    for i, r in enumerate(REPOS):
-        L.append(f'  <a href="https://github.com/nullstacks/{r[0]}">'
-                 f'<img src="{raw}/{r[0]}.svg" width="49.5%" alt="{r[0]}" /></a>')
-        if i % 2 == 1 and i != len(REPOS) - 1:
-            L.append("</p>\n\n<p>")
-    L.append("</p>\n")
+    # tiles: two per row
+    tiles = [img_card("#projects", f"tile-{k}", "49.5%", esc(c["label"].title()))
+             for k, c in CATS.items()]
+    for i in range(0, len(tiles), 2):
+        L += [row(tiles[i:i + 2]), ""]
+    L += ["## Projects", ""]
+    # repo cards: two per row
+    cards = [img_card(f"https://github.com/nullstacks/{r[0]}", r[0], "49.5%", r[0])
+             for r in REPOS]
+    for i in range(0, len(cards), 2):
+        L += [row(cards[i:i + 2], center=False), ""]
     # Live URLs: the old pushkarsingh4343.workers.dev subdomain no longer
     # resolves (NXDOMAIN); the Workers moved to nullstacks.workers.dev.
     LIVE = [(r[0], r[4]) for r in REPOS if r[4]]
