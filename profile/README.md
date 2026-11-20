@@ -1,25 +1,34 @@
-# Nullstacks
+<p align="center">
+  <a href="https://github.com/orgs/nullstacks/repositories"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/hero.svg" width="100%" alt="Nullstacks: open-source AI tools and utilities. Small, sharp, composable." /></a>
+</p>
 
-Open-source AI tools and utilities. Small, sharp, composable.
+<p align="center">
+  <a href="#projects"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/tile-gateways.svg" width="24.4%" alt="Model Gateways" /></a>
+  <a href="#projects"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/tile-services.svg" width="24.4%" alt="Apis &amp; Services" /></a>
+  <a href="#projects"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/tile-extensions.svg" width="24.4%" alt="Browser Extensions" /></a>
+  <a href="#projects"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/tile-apps.svg" width="24.4%" alt="Web Apps &amp; Tools" /></a>
+</p>
 
-## Model gateways
+## Projects
 
-OpenAI/Anthropic-compatible APIs on Cloudflare Workers — plug any harness (Claude Code, Codex CLI, Aider, curl, …) into free model tiers.
+<p>
+  <a href="https://github.com/nullstacks/kilo-gateway"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/kilo-gateway.svg" width="32.5%" alt="kilo-gateway" /></a>
+  <a href="https://github.com/nullstacks/opencode-gateway"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/opencode-gateway.svg" width="32.5%" alt="opencode-gateway" /></a>
+  <a href="https://github.com/nullstacks/cline2api"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/cline2api.svg" width="32.5%" alt="cline2api" /></a>
+  <a href="https://github.com/nullstacks/qoder2api"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/qoder2api.svg" width="32.5%" alt="qoder2api" /></a>
+  <a href="https://github.com/nullstacks/mailapi"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/mailapi.svg" width="32.5%" alt="mailapi" /></a>
+  <a href="https://github.com/nullstacks/heardlist"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/heardlist.svg" width="32.5%" alt="heardlist" /></a>
+  <a href="https://github.com/nullstacks/tack"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/tack.svg" width="32.5%" alt="tack" /></a>
+  <a href="https://github.com/nullstacks/temp-mail-extension"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/temp-mail-extension.svg" width="32.5%" alt="temp-mail-extension" /></a>
+  <a href="https://github.com/nullstacks/cookie-manager"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/cookie-manager.svg" width="32.5%" alt="cookie-manager" /></a>
+  <a href="https://github.com/nullstacks/google-forms-copilot"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/google-forms-copilot.svg" width="32.5%" alt="google-forms-copilot" /></a>
+  <a href="https://github.com/nullstacks/papersnap"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/papersnap.svg" width="32.5%" alt="papersnap" /></a>
+  <a href="https://github.com/nullstacks/curl-toolkit"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/curl-toolkit.svg" width="32.5%" alt="curl-toolkit" /></a>
+  <a href="https://github.com/nullstacks/jee"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/jee.svg" width="32.5%" alt="jee" /></a>
+  <a href="https://github.com/nullstacks/mai-image"><img src="https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards/mai-image.svg" width="32.5%" alt="mai-image" /></a>
+</p>
 
-- **[kilo-gateway](https://github.com/nullstacks/kilo-gateway)** — Kilo Gateway's free models, keyless: transparent proxy + auto-refreshing free-model catalog (17 models)
-- **[opencode-gateway](https://github.com/nullstacks/opencode-gateway)** — OpenCode models (incl. free tier) in any harness, no OpenCode account or API key needed
-- **[cline2api](https://github.com/nullstacks/cline2api)** — Cline's free models as an API, with a catalog that auto-refreshes from Cline every 10 min
-- **[qoder2api](https://github.com/nullstacks/qoder2api)** — Qoder (international) as a self-hosted OpenAI-compatible API — 16 models (Kimi-K3, GLM-5.3, DeepSeek V4.1, Qwen3.7-Max), device-flow login
-
-## APIs & services
-
-- **[mailapi](https://github.com/nullstacks/mailapi)** — your Gmail, as a REST API: Google OAuth + per-user keys on Cloudflare Workers, multi-account, disposable +tag aliases, one key
-- **[heardlist](https://github.com/nullstacks/heardlist)** — free public proxy-list API ([live](https://heardlist.pushkarsingh4343.workers.dev)): hourly-refreshed pool of HTTP/SOCKS proxies, JSON/TXT/CSV output, no API key
-
-## Browser extensions
-
-- **[temp-mail-extension](https://github.com/nullstacks/temp-mail-extension)** — disposable email for Chrome & Brave: constant address until you rotate it, one-click form autofill, live inbox with OTP copy. Powered by the free temp.tf API (MV3, zero dependencies)
-- **[cookie-manager](https://github.com/nullstacks/cookie-manager)** — cookie editor for Chrome & Brave: view, add, edit, delete, import & export cookies for the current site (MV3, zero dependencies, no build step)
+**Try them live:** [heardlist](https://heardlist.nullstacks.workers.dev) · [tack](https://tack.nullstacks.workers.dev) · [cURL Toolkit](https://nullstacks.github.io/curl-toolkit/) · [mailapi](https://mailapi.nullstacks.workers.dev) · [papersnap](https://papersnap.nullstacks.workers.dev) · [jee](https://jee.nullstacks.workers.dev)
 
 ## Contact
 
