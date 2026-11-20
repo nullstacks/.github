@@ -44,30 +44,38 @@ CATS = {
     "apps": dict(label="WEB APPS & TOOLS", color="teal"),
 }
 
-# slug, category, description (2 lines max at 212px), language, live demo?
+# slug, category, description (2 lines max at 212px), language, live demo URL or None
+#
+# The demo URL is the single source of truth for "is this live": a card shows the
+# live badge iff it has a URL here, and the "Try them live" list is generated from
+# the same field. Keeping a separate live-flag plus a separate URL list is what let
+# two dead links drift out of sync with the cards.
 REPOS = [
-    ("kilo-gateway", "gateways", "Kilo's free models, keyless, as an OpenAI/Anthropic API.", "Python", False),
-    ("opencode-gateway", "gateways", "OpenCode models and free tier in any harness. No key.", "Python", False),
-    ("cline2api", "gateways", "Cline's free models as an API. Catalog auto-refreshes.", "Python", False),
-    ("qoder2api", "gateways", "Qoder (intl) as a self-hosted OpenAI-compatible API.", "Python", False),
-    ("mailapi", "services", "Your Gmail as a REST API. One key, many accounts.", "JavaScript", True),
-    ("heardlist", "services", "Free proxy-list API. Hourly refresh, JSON/TXT/CSV.", "JavaScript", True),
-    ("tack", "services", "Paste a page, get a rendered link and a raw link.", "HTML", True),
-    ("temp-mail-extension", "extensions", "Disposable inbox for Chrome & Brave. Autofill, OTP copy.", "JavaScript", False),
-    ("cookie-manager", "extensions", "Cookie editor for Chrome & Brave. JSON/cookies.txt export.", "JavaScript", False),
-    ("google-forms-copilot", "extensions", "AI filler for Google Forms. You review every answer.", "JavaScript", False),
-    ("papersnap", "apps", "Local PDF and image toolkit. 30 tools, no uploads.", "TypeScript", False),
-    ("curl-toolkit", "apps", "cURL to 18 languages plus an in-browser API client.", "TypeScript", True),
-    ("jee", "apps", "JEE Main 2027: PYQ chapters, rank predictor, JoSAA.", "TypeScript", False),
-    ("mai-image", "apps", "Free image gen via Bing Image Creator. Skill + CLI.", "Python", False),
+    ("kilo-gateway", "gateways", "Kilo's free models, keyless, as an OpenAI/Anthropic API.", "Python", None),
+    ("opencode-gateway", "gateways", "OpenCode models and free tier in any harness. No key.", "Python", None),
+    ("cline2api", "gateways", "Cline's free models as an API. Catalog auto-refreshes.", "Python", None),
+    ("qoder2api", "gateways", "Qoder (intl) as a self-hosted OpenAI-compatible API.", "Python", None),
+    ("mailapi", "services", "Your Gmail as a REST API. One key, many accounts.", "JavaScript",
+     "https://mailapi.nullstacks.workers.dev"),
+    ("heardlist", "services", "Free proxy-list API. Hourly refresh, JSON/TXT/CSV.", "JavaScript",
+     "https://heardlist.nullstacks.workers.dev"),
+    ("tack", "services", "Paste a page, get a rendered link and a raw link.", "HTML",
+     "https://tack.nullstacks.workers.dev"),
+    ("temp-mail-extension", "extensions", "Disposable inbox for Chrome & Brave. Autofill, OTP copy.", "JavaScript", None),
+    ("cookie-manager", "extensions", "Cookie editor for Chrome & Brave. JSON/cookies.txt export.", "JavaScript", None),
+    ("google-forms-copilot", "extensions", "AI filler for Google Forms. You review every answer.", "JavaScript", None),
+    ("papersnap", "apps", "Local PDF and image toolkit. 30 tools, no uploads.", "TypeScript",
+     "https://papersnap.nullstacks.workers.dev"),
+    ("curl-toolkit", "apps", "cURL to 18 languages plus an in-browser API client.", "TypeScript",
+     "https://nullstacks.github.io/curl-toolkit/"),
+    ("jee", "apps", "JEE Main 2027: PYQ chapters, rank predictor, JoSAA.", "TypeScript",
+     "https://jee.nullstacks.workers.dev"),
+    ("mai-image", "apps", "Free image gen via Bing Image Creator. Skill + CLI.", "Python", None),
 ]
 
-LIVE = [
-    ("heardlist", "https://heardlist.pushkarsingh4343.workers.dev"),
-    ("tack", "https://tack.nullstacks.workers.dev"),
-    ("cURL Toolkit", "https://nullstacks.github.io/curl-toolkit/"),
-    ("mailapi", "https://mailapi.pushkarsingh4343.workers.dev"),
-]
+# Display names for the live-links line. The old pushkarsingh4343.workers.dev
+# subdomain is NXDOMAIN; every Worker now lives under nullstacks.workers.dev.
+LIVE_LABELS = {"curl-toolkit": "cURL Toolkit"}
 
 # ---- 5x7 bitmap font (drawn from rects, so no font file is needed) ------------------
 FONT = {
@@ -304,7 +312,7 @@ def tile(key, delay):
 
 
 # ---- repo cards (212 wide) --------------------------------------------------------------
-def repo_card(idx, slug, key, desc, lang, live):
+def repo_card(idx, slug, key, desc, lang, live_url):
     W, H = HALF, 88
     col = CATS[key]["color"]
     d0 = 0.1 + (idx % 6) * 0.08
@@ -316,7 +324,7 @@ def repo_card(idx, slug, key, desc, lang, live):
         out.append(f'<text class="mute" x="14" y="{42 + i * 13}" font-size="10.5">{esc(ln)}</text>')
     out.append(f'<rect x="14" y="68" width="5" height="5" fill="var(--{col})"/>')
     out.append(f'<text class="mono mute" x="24" y="74" font-size="9">{esc(lang)}</text>')
-    if live:
+    if live_url:
         out.append(f'<rect class="pulse" x="{W - SHADOW - 44}" y="68" width="5" height="5" fill="var(--teal)"/>'
                    f'<text class="mono" x="{W - SHADOW - 12}" y="74" font-size="9" text-anchor="end" style="fill:var(--teal)">live</text>')
     out.append("</g>")
@@ -362,7 +370,11 @@ def write_readme():
 
     tiles = [f'<a href="{org}">{img("tile-" + k, c["label"].title(), "49.5%")}</a>' for k, c in CATS.items()]
     cards = [f'<a href="https://github.com/nullstacks/{r[0]}">{img(r[0], r[0], "49.5%")}</a>' for r in REPOS]
-    live = " &nbsp;·&nbsp; ".join(f"[{n}]({u})" for n, u in LIVE)
+    # generated from the same field that drives the live badge on each card
+    live = " &nbsp;·&nbsp; ".join(
+        f"[{LIVE_LABELS.get(slug, slug)}]({url})"
+        for slug, _key, _desc, _lang, url in REPOS if url
+    )
 
     parts = [
         f'<p align="center"><a href="{org}">{img("hero", "Nullstacks: open-source AI tools and utilities. Small, sharp, composable.", "100%")}</a></p>',
@@ -397,8 +409,8 @@ def main():
     write("hero.svg", hero())
     for i, key in enumerate(CATS):
         write(f"tile-{key}.svg", tile(key, 1.0 + i * 0.18))
-    for i, (slug, key, desc, lang, live) in enumerate(REPOS):
-        write(f"{slug}.svg", repo_card(i, slug, key, desc, lang, live))
+    for i, (slug, key, desc, lang, live_url) in enumerate(REPOS):
+        write(f"{slug}.svg", repo_card(i, slug, key, desc, lang, live_url))
     write("heading-projects.svg", heading("PROJECTS", "blue"))
     write("heading-live.svg", heading("TRY THEM LIVE", "teal"))
     write("heading-contact.svg", heading("CONTACT", "amber"))
