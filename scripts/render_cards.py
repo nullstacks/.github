@@ -6,15 +6,13 @@ Writes:                    profile/cards/*.svg  and  profile/README.md
 STATIC=1 python ...        renders final frames (no animation) for screenshots.
 
 SIZING RULE (why this file is built the way it is)
-  GitHub's README column is fluid: ~428px wide at a 780px viewport, ~592px at 1000px.
-  An <img> shown narrower than its authored width is scaled DOWN and the type gets
-  illegible, so every card is authored at the exact pixel width it renders at in the
-  narrow case:
-        FULL = 428   (hero, section headings, divider)   -> width="100%"
-        HALF = 212   (tiles, repo cards; two per row)    -> width="49.5%"
-  Wider columns scale the cards UP slightly, which stays sharp and legible.
-  Two-up images are written back-to-back with no whitespace between the tags so
-  49.5% + 49.5% always fits on one line.
+  Every card is shown at the exact pixel width it is authored at, so nothing is
+  stretched on wide screens (width=WIDE made the cards ~2x too big):
+        WIDE = 880   (hero, section headings, divider)    -> width="880"
+        HALF = 220   (tiles, repo cards; four per row)    -> width="220"  (212x88 card + 8px gutter)
+  880 is GitHub's maximum README column; GitHub shrinks wide cards automatically on
+  narrow screens. Four 220px cards fill one 880px row; the images in a row are written
+  back-to-back with no whitespace so four always fit, and wrap to 3 or 2 on small screens.
 
 Everything works inside <img> on GitHub: inline <style>, CSS keyframes,
 prefers-color-scheme and prefers-reduced-motion. No scripts, no external requests,
@@ -29,7 +27,8 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 CARDS = os.path.join(ROOT, "profile", "cards")
 STATIC = os.environ.get("STATIC") == "1"
 
-FULL, HALF, SHADOW = 428, 212, 4
+FULL, HALF, WIDE, SHADOW = 428, 220, 880, 4
+CARD_W, CARD_H = 212, 88  # the drawn card; HALF x 96 adds an 8px transparent gutter right and below
 RAW = "https://raw.githubusercontent.com/nullstacks/.github/main/profile/cards"
 
 SERIF = "Georgia,'Iowan Old Style','Times New Roman',serif"
@@ -232,18 +231,23 @@ def chip(x, y, label, size=10):
     )
 
 
-# ---- hero (428 wide) ----------------------------------------------------------------
+# ---- hero (880 wide): terminal window, pixel title, the "null" glyph on the right --------------
 def hero():
-    W, H = FULL, 220
+    W, H = WIDE, 196
     out = [frame(W, H, "blue")]
+    for i, col in enumerate(("red", "amber", "teal")):
+        out.append(f'<rect x="{16 + i * 12}" y="10" width="7" height="7" fill="var(--{col})"/>')
+    out.append('<text class="mono mute" x="64" y="17" font-size="10" letter-spacing="1">~/nullstacks/README.md</text>')
+    out.append(f'<line x1="14" y1="24" x2="{W - SHADOW - 14}" y2="24" stroke="var(--line)" stroke-width="2"/>')
 
-    # twinkling stars
-    for i, (sx, sy) in enumerate([(60, 100), (210, 98), (282, 102), (409, 128), (409, 160), (300, 164)]):
-        out.append(f'<rect class="twinkle" style="--d:{i * .5:.1f}s;fill:var(--ink)" x="{sx}" y="{sy}" width="3" height="3"/>')
+    # twinkling stars (clear of the text block and the glyph)
+    for i, (sx, sy) in enumerate([(520, 44), (560, 150), (610, 62), (650, 120), (470, 170), (700, 40),
+                                  (830, 40), (846, 170), (440, 52), (600, 176), (690, 168), (500, 100)]):
+        out.append(f'<rect class="twinkle" style="--d:{i * .4:.1f}s;fill:var(--{("ink", "blue", "teal", "amber")[i % 4]})" x="{sx}" y="{sy}" width="3" height="3"/>')
 
     # the "null" glyph: ring + slash, built from squares, then looping comet + zip
-    cols, rows, pitch, cell = 13, 11, 8, 6
-    gx, gy = 300, 22
+    cols, rows, pitch, cell = 13, 11, 12, 9
+    gx, gy = 700, 44
     cx, cy = (cols - 1) / 2, (rows - 1) / 2
     cells = []
     for r in range(rows):
@@ -268,24 +272,20 @@ def hero():
         )
 
     out.append(
-        '<text class="mono mute rise" style="--d:.1s" x="20" y="36" font-size="9.5" letter-spacing="1.5">GITHUB.COM/NULLSTACKS</text>'
-        '<text class="rise" style="--d:.45s" x="20" y="62" font-size="13">Open-source AI tools and utilities.</text>'
-        '<text class="serif mute rise" style="--d:.6s" x="20" y="82" font-size="13" font-style="italic">Small, sharp, composable.</text>'
+        '<text class="mono rise" style="--d:.1s" x="24" y="52" font-size="12"><tspan style="fill:var(--teal)">$</tspan>'
+        '<tspan class="mute" dx="8">open github.com/nullstacks</tspan></text>'
     )
-
     # pixel title: flickers in letter by letter, then a blue glint travels across forever
     title = "NULLSTACKS"
-    tx, ty = 20, 118
-    out.append(pixel_text(title, tx, ty, 5, 1, 'class="title" fill="var(--ink)"',
+    tx, ty = 24, 66
+    out.append(pixel_text(title, tx, ty, 7, 0, 'class="title" fill="var(--ink)"',
                           lambda i: f'style="--d:{0.15 + i * 0.09:.2f}s;--g:{2.2 + i * 0.1:.2f}s"'))
-    cursor_x = tx + text_width(title, 5, 1) + 8
-    out.append(f'<rect class="blink" x="{cursor_x}" y="{ty + 18}" width="12" height="23" fill="var(--blue)"/>')
-
-    x = 20
-    for i, label in enumerate(["Cloudflare Workers", "Chrome MV3", "Python", "React", "MIT"]):
-        w, c = chip(x, 176, label)
-        out.append(f'<g class="rise" style="--d:{0.8 + i * 0.07:.2f}s">{c}</g>')
-        x += w + 6
+    cursor_x = tx + text_width(title, 7, 0) + 10
+    out.append(f'<rect class="blink" x="{cursor_x}" y="{ty + 20}" width="14" height="29" fill="var(--blue)"/>')
+    out.append(
+        '<text class="rise" style="--d:.6s" x="24" y="150" font-size="15">Open-source AI tools and utilities.</text>'
+        '<text class="serif mute rise" style="--d:.8s" x="24" y="172" font-size="15" font-style="italic">Small, sharp, composable.</text>'
+    )
     return svg(W, H, "".join(out), "Nullstacks: open-source AI tools and utilities. Small, sharp, composable.")
 
 
@@ -294,26 +294,26 @@ def tile(key, delay):
     cat = CATS[key]
     names = [r[0] for r in REPOS if r[1] == key]
     n = len(names)
-    W, H = HALF, 88
+    W, H = CARD_W, CARD_H
     col = cat["color"]
     out = [f'<g class="rise" style="--d:{delay:.2f}s">', frame(W, H, col)]
     out.append(sprite(SPRITES[key], 14, 22, 4, col, delay + 0.2))
     out.append(f'<text class="mono mute" x="58" y="30" font-size="9.5" letter-spacing="1">{esc(cat["label"])}</text>')
     # count-up in pixel digits: 0 .. n-1 flash by, then the final number stays
     for i in range(n):
-        out.append(pixel_text(str(i), 58, 40, 4, 1,
+        out.append(pixel_text(str(i), 58, 40, 5, 0,
                               f'class="tick" style="--d:{delay + .45 + i * .13:.2f}s;fill:var(--{col})"', bold=True))
-    out.append(pixel_text(str(n), 58, 40, 4, 1,
+    out.append(pixel_text(str(n), 58, 40, 5, 0,
                           f'class="final" style="--d:{delay + .45 + n * .13:.2f}s;fill:var(--{col})"', bold=True))
     out.append(f'<text class="mono mute" x="96" y="73" font-size="10">repos</text>')
     out.append(f'<rect class="blink" x="{W - SHADOW - 16}" y="14" width="6" height="6" fill="var(--{col})"/>')
     out.append("</g>")
-    return svg(W, H, "".join(out), f'{cat["label"].title()}: {", ".join(names)}')
+    return svg(HALF, 96, "".join(out), f'{cat["label"].title()}: {", ".join(names)}')
 
 
 # ---- repo cards (212 wide) --------------------------------------------------------------
 def repo_card(idx, slug, key, desc, lang, live_url):
-    W, H = HALF, 88
+    W, H = CARD_W, CARD_H
     col = CATS[key]["color"]
     d0 = 0.1 + (idx % 6) * 0.08
     lines = textwrap.wrap(desc, 33)[:2]
@@ -328,24 +328,27 @@ def repo_card(idx, slug, key, desc, lang, live_url):
         out.append(f'<rect class="pulse" x="{W - SHADOW - 44}" y="68" width="5" height="5" fill="var(--teal)"/>'
                    f'<text class="mono" x="{W - SHADOW - 12}" y="74" font-size="9" text-anchor="end" style="fill:var(--teal)">live</text>')
     out.append("</g>")
-    return svg(W, H, "".join(out), f"{slug}: {desc}")
+    return svg(HALF, 96, "".join(out), f"{slug}: {desc}")
 
 
 # ---- section headings + divider (428 wide) ----------------------------------------------
-def heading(label, accent):
-    W, H = FULL, 34
-    cell, gap = 3, 1
+def heading(label, accent, idx=None):
+    W, H = WIDE, 34
+    cell, gap = 4, 0
     tw = text_width(label, cell, gap, bold=True)
+    end = W - (52 if idx else 0)
     out = [
         f'<rect class="blink" x="0" y="8" width="10" height="10" fill="var(--{accent})"/>',
         pixel_text(label, 20, 4, cell, gap, 'class="ink"', bold=True),
-        f'<line class="march" x1="{20 + tw + 14}" y1="10" x2="{W}" y2="10" stroke="var(--line)" stroke-width="4" stroke-dasharray="4 4"/>',
+        f'<line class="march" x1="{20 + tw + 14}" y1="10" x2="{end}" y2="10" stroke="var(--line)" stroke-width="4" stroke-dasharray="4 4"/>',
     ]
+    if idx:
+        out.append(f'<text class="mono mute" x="{W}" y="15" font-size="12" letter-spacing="1" text-anchor="end">// {idx:02d}</text>')
     return svg(W, H, "".join(out), label.title())
 
 
 def divider():
-    W, H = FULL, 12
+    W, H = WIDE, 12
     cols = ["blue", "red", "amber", "teal"]
     out = []
     for i in range(W // 8):
@@ -355,10 +358,10 @@ def divider():
 
 # ---- README ---------------------------------------------------------------------------------
 def pair_rows(imgs):
-    """Two images per line, no whitespace between the tags (so 49.5% + 49.5% never wraps)."""
+    """Four images per line, no whitespace between the tags (so 4 x 220px always fit in 880px)."""
     rows = []
-    for i in range(0, len(imgs), 2):
-        rows.append("".join(imgs[i:i + 2]))
+    for i in range(0, len(imgs), 4):
+        rows.append("".join(imgs[i:i + 4]))
     return "\n".join(rows)
 
 
@@ -368,8 +371,8 @@ def write_readme():
     def img(name, alt, width):
         return f'<img src="{RAW}/{name}.svg" width="{width}" alt="{html.escape(alt)}" />'
 
-    tiles = [f'<a href="{org}">{img("tile-" + k, c["label"].title(), "49.5%")}</a>' for k, c in CATS.items()]
-    cards = [f'<a href="https://github.com/nullstacks/{r[0]}">{img(r[0], r[0], "49.5%")}</a>' for r in REPOS]
+    tiles = [f'<a href="{org}">{img("tile-" + k, c["label"].title(), HALF)}</a>' for k, c in CATS.items()]
+    cards = [f'<a href="https://github.com/nullstacks/{r[0]}">{img(r[0], r[0], HALF)}</a>' for r in REPOS]
     # generated from the same field that drives the live badge on each card
     live = " &nbsp;·&nbsp; ".join(
         f"[{LIVE_LABELS.get(slug, slug)}]({url})"
@@ -377,23 +380,23 @@ def write_readme():
     )
 
     parts = [
-        f'<p align="center"><a href="{org}">{img("hero", "Nullstacks: open-source AI tools and utilities. Small, sharp, composable.", "100%")}</a></p>',
+        f'<p align="center"><a href="{org}">{img("hero", "Nullstacks: open-source AI tools and utilities. Small, sharp, composable.", WIDE)}</a></p>',
         "",
         "<p>\n" + pair_rows(tiles) + "\n</p>",
         "",
-        f'<p>{img("heading-projects", "Projects", "100%")}</p>',
+        f'<p>{img("heading-projects", "Projects", WIDE)}</p>',
         "",
         "<p>\n" + pair_rows(cards) + "\n</p>",
         "",
-        f'<p>{img("heading-live", "Try them live", "100%")}</p>',
+        f'<p>{img("heading-live", "Try them live", WIDE)}</p>',
         "",
         live,
         "",
-        f'<p>{img("heading-contact", "Contact", "100%")}</p>',
+        f'<p>{img("heading-contact", "Contact", WIDE)}</p>',
         "",
         "Open an issue, or email [help.pushkar@gmail.com](mailto:help.pushkar@gmail.com).",
         "",
-        f'<p>{img("divider", "", "100%")}</p>',
+        f'<p>{img("divider", "", WIDE)}</p>',
         "",
     ]
     with open(os.path.join(ROOT, "profile", "README.md"), "w", encoding="utf-8") as fh:
@@ -411,9 +414,9 @@ def main():
         write(f"tile-{key}.svg", tile(key, 1.0 + i * 0.18))
     for i, (slug, key, desc, lang, live_url) in enumerate(REPOS):
         write(f"{slug}.svg", repo_card(i, slug, key, desc, lang, live_url))
-    write("heading-projects.svg", heading("PROJECTS", "blue"))
-    write("heading-live.svg", heading("TRY THEM LIVE", "teal"))
-    write("heading-contact.svg", heading("CONTACT", "amber"))
+    write("heading-projects.svg", heading("PROJECTS", "blue", 1))
+    write("heading-live.svg", heading("TRY THEM LIVE", "teal", 2))
+    write("heading-contact.svg", heading("CONTACT", "amber", 3))
     write("divider.svg", divider())
     write_readme()
 
