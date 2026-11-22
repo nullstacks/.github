@@ -6,13 +6,22 @@ Writes:                    profile/cards/*.svg  and  profile/README.md
 STATIC=1 python ...        renders final frames (no animation) for screenshots.
 
 SIZING RULE (why this file is built the way it is)
-  Every card is shown at the exact pixel width it is authored at, so nothing is
-  stretched on wide screens (width=WIDE made the cards ~2x too big):
-        WIDE = 880   (hero, section headings, divider)    -> width="880"
-        HALF = 220   (tiles, repo cards; four per row)    -> width="220"  (212x88 card + 8px gutter)
-  880 is GitHub's maximum README column; GitHub shrinks wide cards automatically on
-  narrow screens. Four 220px cards fill one 880px row; the images in a row are written
-  back-to-back with no whitespace so four always fit, and wrap to 3 or 2 on small screens.
+  GitHub's README column is fluid but usually NARROWER than 880px: it renders around
+  830-846px at common desktop widths. Anything hard-coded to 880 is therefore wider
+  than the container, and four 220px cards (880px total) do NOT fit - the fourth one
+  wraps, which is the "three per row" bug.
+
+  So the two card sizes solve different problems:
+        WIDE = 880   (hero, section headings, divider)  -> width="880"
+                      This is the AUTHORING width. GitHub clamps the rendered <img> to
+                      max-width:100%, so it scales down ~4-6% and stays crisp.
+        HALF = 220   (tiles, repo cards; four per row)  -> width="24.5%"
+                      Percentage, NOT pixels. 4 x 24.5% = 98% of whatever the column
+                      is, so four always fit - at 604px, 846px, or anything else.
+                      Cards stay authored at 220px and scale down slightly; SVG keeps
+                      the pixel art sharp.
+
+  A <p> per row plus no whitespace between tags keeps each row on one line.
 
 Everything works inside <img> on GitHub: inline <style>, CSS keyframes,
 prefers-color-scheme and prefers-reduced-motion. No scripts, no external requests,
@@ -164,7 +173,8 @@ def svg(w, h, body, title):
 
 def write(name, content):
     os.makedirs(CARDS, exist_ok=True)
-    with open(os.path.join(CARDS, name), "w", encoding="utf-8") as fh:
+    # newline="\n" so Windows does not write CRLF into the committed SVGs
+    with open(os.path.join(CARDS, name), "w", encoding="utf-8", newline="\n") as fh:
         fh.write(content)
     print(f"wrote {name:28s} {len(content):6d} bytes")
 
@@ -357,11 +367,21 @@ def divider():
 
 
 # ---- README ---------------------------------------------------------------------------------
-def pair_rows(imgs):
-    """Four images per line, no whitespace between the tags (so 4 x 220px always fit in 880px)."""
+# ---- row layout ---------------------------------------------------------------------
+# Percentage so the row adapts to GitHub's real column width (see SIZING RULE above).
+# Four per row: 4 x 24.5% = 98%, leaving 2% for rounding without ever wrapping.
+ROW = "24.5%"
+
+
+def pair_rows(imgs, per_row=4):
+    """`per_row` images per line, no whitespace between the tags.
+
+    Percentage widths mean the row always fits the container, so the count per line
+    is what controls the layout - not the viewport.
+    """
     rows = []
-    for i in range(0, len(imgs), 4):
-        rows.append("".join(imgs[i:i + 4]))
+    for i in range(0, len(imgs), per_row):
+        rows.append("".join(imgs[i:i + per_row]))
     return "\n".join(rows)
 
 
@@ -371,8 +391,8 @@ def write_readme():
     def img(name, alt, width):
         return f'<img src="{RAW}/{name}.svg" width="{width}" alt="{html.escape(alt)}" />'
 
-    tiles = [f'<a href="{org}">{img("tile-" + k, c["label"].title(), HALF)}</a>' for k, c in CATS.items()]
-    cards = [f'<a href="https://github.com/nullstacks/{r[0]}">{img(r[0], r[0], HALF)}</a>' for r in REPOS]
+    tiles = [f'<a href="{org}">{img("tile-" + k, c["label"].title(), ROW)}</a>' for k, c in CATS.items()]
+    cards = [f'<a href="https://github.com/nullstacks/{r[0]}">{img(r[0], r[0], ROW)}</a>' for r in REPOS]
     # generated from the same field that drives the live badge on each card
     live = " &nbsp;·&nbsp; ".join(
         f"[{LIVE_LABELS.get(slug, slug)}]({url})"
@@ -399,7 +419,7 @@ def write_readme():
         f'<p>{img("divider", "", WIDE)}</p>',
         "",
     ]
-    with open(os.path.join(ROOT, "profile", "README.md"), "w", encoding="utf-8") as fh:
+    with open(os.path.join(ROOT, "profile", "README.md"), "w", encoding="utf-8", newline="\n") as fh:
         fh.write("\n".join(parts))
     print("wrote README.md")
 
